@@ -1,0 +1,65 @@
+[
+  {
+    "pergunta": "Qual país você prefere conhecer em uma viagem?",
+    "opcoes": [
+      {
+        "id": 1,
+        "texto": "Austrália"
+      },
+      {
+        "id": 2,
+        "texto": "Nova Zelândia"
+      },
+      {
+        "id": 3,
+        "texto": "Japão"
+      },
+      {
+        "id": 4,
+        "texto": "Itália"
+      }
+    ]
+  },
+  {
+    "pergunta": "Qual animal de estimação você prefere ter?",
+    "opcoes": [
+      {
+        "id": 1,
+        "texto": "Cachorro"
+      },
+      {
+        "id": 2,
+        "texto": "Gato"
+      },
+      {
+        "id": 3,
+        "texto": "Pássaro"
+      },
+      {
+        "id": 4,
+        "texto": "Peixe"
+      }
+    ]
+  },
+  {
+    "pergunta": "Qual a chance de o professor Elvandi nos dar nota 10?",
+    "opcoes": [
+      {
+        "id": 1,
+        "texto": "100%"
+      },
+      {
+        "id": 2,
+        "texto": "1000%"
+      },
+      {
+        "id": 3,
+        "texto": "2000%, certeza absoluta!"
+      },
+      {
+        "id": 4,
+        "texto": "Nota 10 é pouco, merecemos 11!"
+      }
+    ]
+  }
+]

@@ -1,0 +1,146 @@
+Relatório de Testes — Sistema de Votação em Rede
+Integrantes: Amanda, Caroline e Julie
+Disciplina: Redes de Computadores — Trabalho Prático 2 (Opção 6)
+Ambiente: Python 3.10+, Windows, VS Code
+
+
+----------------------------------------------------------------------
+Descrição geral
+----------------------------------------------------------------------
+
+O sistema implementa uma votação em rede usando dois protocolos da camada
+de transporte: TCP para toda a comunicação confiável (cadastro, comandos,
+votos, consultas e resultados) e UDP para avisos informativos em tempo
+real (abertura, atualização de votos e encerramento).
+
+O servidor fica na porta TCP 5000. Cada cliente, ao iniciar, abre um
+socket UDP em uma porta escolhida pelo sistema operacional e informa
+esse número ao servidor no momento do cadastro. O servidor guarda o IP
+e a porta UDP de cada participante e, sempre que algo muda, envia um
+aviso por unicast para todos os cadastrados.
+
+O primeiro cliente a se conectar recebe o papel de organizador e é o
+único que pode abrir e encerrar a votação. Os demais só podem votar e
+consultar.
+
+
+----------------------------------------------------------------------
+Testes executados
+----------------------------------------------------------------------
+
+1. Cadastro de três clientes
+   Procedimento: abrir três terminais e executar cliente.py em cada um,
+   informando nomes distintos e o IP 127.0.0.1.
+   Resultado: os três clientes se conectaram com sucesso. O servidor
+   atribuiu os identificadores "1", "2" e "3" na ordem de conexão. O
+   cliente de id "1" recebeu a mensagem "Você é o organizador" e viu as
+   opções 1 e 2 no menu (abrir/encerrar). Os demais não viram essas
+   opções. Todas as perguntas do opcoes.json foram recebidas corretamente
+   no cadastro.
+
+2. Abertura da votação
+   Procedimento: organizador escolhe a opção 1 no menu.
+   Resultado: servidor respondeu {"ok": true, "mensagem": "Votação aberta."}.
+   Os outros dois clientes receberam imediatamente o aviso UDP do tipo
+   "votacao_aberta" com o número de atualização correspondente. A mensagem
+   apareceu no terminal como "[AVISO UDP] votacao_aberta | atualização 1".
+
+3. Voto válido
+   Procedimento: um participante escolhe a pergunta 1 e a opção 2
+   (Nova Zelândia).
+   Resultado: servidor confirmou com {"ok": true, "mensagem": "Voto
+   registrado com sucesso!", "total_votos": 1}. Em seguida, todos os
+   clientes receberam aviso UDP "votos_atualizados" indicando que a
+   pergunta 1 passou a ter 1 voto.
+
+4. Voto duplicado
+   Procedimento: o mesmo participante tenta votar novamente na pergunta 1.
+   Resultado: servidor rejeitou com {"ok": false, "erro": "Você já votou
+   nesta pergunta."} O voto anterior não foi alterado e o total
+   permaneceu o mesmo.
+
+5. Opção inválida
+   Procedimento: participante digita um número de opção que não existe
+   nas perguntas (por exemplo, 99).
+   Resultado: servidor retornou {"ok": false, "erro": "Opção inexistente."}
+   sem registrar nenhum voto. O comportamento foi o mesmo tanto com
+   números fora do intervalo quanto com texto no campo de opção (o
+   cliente imprimiu "Entrada inválida: digite um número inteiro." antes
+   mesmo de enviar ao servidor).
+
+6. Consulta durante a votação
+   Procedimento: participante escolhe a opção 4 no menu enquanto a
+   votação está aberta.
+   Resultado: servidor retornou o estado "ABERTA", a lista de perguntas
+   em que o participante já votou e o total de votos por pergunta até
+   aquele momento. O campo "resultados" não apareceu na resposta, pois
+   a apuração por opção fica oculta enquanto a votação está em andamento.
+
+7. Apuração oculta (resultado antes do encerramento)
+   Procedimento: participante escolhe a opção 5 (ver resultado final)
+   enquanto a votação ainda está aberta.
+   Resultado: servidor respondeu {"ok": false, "erro": "A apuração fica
+   oculta até o encerramento."} Nenhum dado de contagem foi exposto.
+
+8. Encerramento da votação
+   Procedimento: organizador escolhe a opção 2 no menu.
+   Resultado: servidor retornou os resultados completos com contagem e
+   percentual por opção, além de identificar a opção vencedora em cada
+   pergunta. Todos os participantes receberam aviso UDP "votacao_encerrada".
+   O menu do organizador voltou a exibir apenas as opções de votar,
+   consultar, resultado e sair (sem abrir/encerrar, pois a votação já
+   foi encerrada e não pode ser reaberta na mesma sessão).
+
+9. Voto tardio (após encerramento)
+   Procedimento: participante tenta votar depois que a votação foi
+   encerrada.
+   Resultado: servidor rejeitou com {"ok": false, "erro": "A votação
+   está fechada."} Nenhum voto foi acrescentado ao total.
+
+10. Desconexão de cliente
+    Procedimento: fechar um dos terminais de cliente enquanto os outros
+    ainda estão ativos.
+    Resultado: o servidor registrou a desconexão no log ("TCP |
+    desconexão") e continuou atendendo os demais clientes normalmente.
+    Os votos já registrados pelo cliente desconectado foram mantidos.
+
+11. Comunicação UDP (verificação no Wireshark)
+    Procedimento: iniciar uma captura no Wireshark filtrando por UDP na
+    porta dos clientes e executar a sequência completa de abertura, voto
+    e encerramento.
+    Resultado: foram observados os datagramas UDP enviados pelo servidor
+    para cada cliente após cada evento. Confirmou-se o uso de unicast
+    (o servidor envia um datagrama separado para cada participante, não
+    broadcast). Os pacotes continham os campos "tipo", "atualizacao" e
+    "mensagem" ou "total_votos" conforme o evento. Na mesma captura,
+    as mensagens TCP apareceram como segmentos individuais delimitados
+    por "\n", compatível com o uso de readline() no código.
+
+
+----------------------------------------------------------------------
+Limitações conhecidas
+----------------------------------------------------------------------
+
+- Apenas uma votação por execução do servidor. Encerrada a votação, não
+  é possível abri-la novamente sem reiniciar o processo.
+- Todos os dados ficam em memória; reiniciar o servidor apaga os votos
+  e os cadastros.
+- O papel de organizador é determinado pela ordem de conexão, sem
+  autenticação. Qualquer pessoa que se conectar primeiro assume o
+  controle.
+- Os avisos UDP não têm garantia de entrega. Se um cliente estiver
+  temporariamente inacessível, o aviso se perde. A consulta TCP é o
+  canal oficial para verificar o estado real da votação.
+- Não há controle de uma pessoa física por voto; um mesmo computador
+  pode abrir múltiplos terminais e votar várias vezes com nomes
+  diferentes.
+
+
+----------------------------------------------------------------------
+Evidências
+----------------------------------------------------------------------
+
+- logs/eventos.log: gerado automaticamente pelo servidor durante a
+  execução. Contém todos os cadastros, votos e mudanças de estado com
+  data e hora.
+- captura.pcapng: captura do Wireshark realizada durante os testes.

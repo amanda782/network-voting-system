@@ -1,0 +1,17 @@
+2026-11-12 14:18:08,383 | Servidor iniciado | TCP=5000
+2026-11-12 14:18:49,846 | CADASTRO | cliente=1 | nome=Amanda | origem=127.0.0.1:59773
+2026-11-12 14:19:23,562 | CADASTRO | cliente=2 | nome=Carol | origem=127.0.0.1:59788
+2026-11-12 14:20:09,454 | CADASTRO | cliente=3 | nome=Julie | origem=127.0.0.1:59806
+2026-11-12 14:20:39,728 | ESTADO | votação aberta | atualização=1
+2026-11-12 14:20:39,728 | UDP | aviso=votacao_aberta | destino=127.0.0.1:63621 | cliente=1
+2026-11-12 14:20:39,729 | UDP | aviso=votacao_aberta | destino=127.0.0.1:56877 | cliente=2
+2026-11-12 14:20:39,729 | UDP | aviso=votacao_aberta | destino=127.0.0.1:57506 | cliente=3
+2026-11-12 14:21:14,989 | VOTO | cliente=2 | pergunta=1 | opção=2 | total=1
+2026-11-12 14:21:14,989 | UDP | aviso=votos_atualizados | destino=127.0.0.1:63621 | cliente=1
+2026-11-12 14:21:14,990 | UDP | aviso=votos_atualizados | destino=127.0.0.1:56877 | cliente=2
+2026-11-12 14:21:14,990 | UDP | aviso=votos_atualizados | destino=127.0.0.1:57506 | cliente=3
+2026-11-12 14:24:11,589 | ESTADO | votação encerrada | atualização=3
+2026-11-12 14:24:11,590 | UDP | aviso=votacao_encerrada | destino=127.0.0.1:63621 | cliente=1
+2026-11-12 14:24:11,591 | UDP | aviso=votacao_encerrada | destino=127.0.0.1:56877 | cliente=2
+2026-11-12 14:24:11,591 | UDP | aviso=votacao_encerrada | destino=127.0.0.1:57506 | cliente=3
+2026-11-12 14:24:40,164 | CONEXÃO | encerrada | cliente=3
